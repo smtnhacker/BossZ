@@ -1,0 +1,7 @@
+# Local environment
+env/
+.env
+
+# Caches
+_pycache_
+*.pyc
