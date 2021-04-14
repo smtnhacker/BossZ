@@ -62,6 +62,7 @@ class Reminding(commands.Cog, name = 'reminding'):
             reply = await self.bot.wait_for('message', check = formats.is_proper_date_time, timeout = 10)
             remind_date_time = reply.content
         except asyncio.TimeoutError:
+            print(f'But he was taking too long though, so I had to ignore him.')
             return await ctx.channel.send(config.MSG_TIMEOUT_ERROR)
         else:
             print(f'It was due on {remind_date_time}')

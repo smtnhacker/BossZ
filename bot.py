@@ -33,10 +33,12 @@ async def on_ready():
 async def status_task():
     while True:
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = f'{config.BOT_PREFIX}help'))
-        await asyncio.sleep(60)
+        await asyncio.sleep(120)
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = f'cries for help'))
         await asyncio.sleep(60)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = f'student tears'))
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = f"students' tears"))
+        await asyncio.sleep(60)
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = f"LOA filing"))
         await asyncio.sleep(60)
 
 @bot.event

@@ -5,3 +5,6 @@ env/
 # Caches
 _pycache_
 *.pyc
+
+# Mocks
+mock_*.py
