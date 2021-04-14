@@ -34,8 +34,9 @@ class Reminding(commands.Cog, name = 'reminding'):
             print(f'Successfully retrieved {user.name}')
 
         # Internal print to tell about the author and who to reminder
-        if user == ctx.message.author or user.lower() == 'me':
+        if type(user) == str and user.lower() == 'me':
             user = ctx.message.author
+        if user == ctx.message.author:
             print(f'{user.name} wanted me to remind him.')
         else:
             print(f'{ctx.message.author} wanted me to remind {user.name}')
