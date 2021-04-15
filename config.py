@@ -1,6 +1,6 @@
 print('config.py successfully imported')
 
-BOT_PREFIX = 'boss!'
+BOT_PREFIX = 'boss! '
 
 # Messages
 MSG_TIMEOUT_ERROR = 'Sorry. Something came up. Will get back to you later!'

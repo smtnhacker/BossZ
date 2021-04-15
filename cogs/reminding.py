@@ -55,11 +55,16 @@ class Reminding(commands.Cog, name = 'reminding'):
             print(f'But he was taking too long though, so I had to ignore him.')
             return await ctx.channel.send(config.MSG_TIMEOUT_ERROR)
         
+        @formats.is_proper_date_time
+        def proper_reply2(reply):
+            "Ensures that the reply came from the original sender"
+            return reply.author == ctx.message.author and reply.content.isprintable()
+
         # Prompt the user regarding when the reminder must come
         await ctx.channel.send(f'When is this due?')
         try:
             print('I\'m now awaiting the response')
-            reply = await self.bot.wait_for('message', check = formats.is_proper_date_time, timeout = 10)
+            reply = await self.bot.wait_for('message', check = proper_reply2, timeout = 30.0)
             remind_date_time = reply.content
         except asyncio.TimeoutError:
             print(f'But he was taking too long though, so I had to ignore him.')
