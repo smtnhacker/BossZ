@@ -11,6 +11,9 @@ import config
 import asyncio
 import pprint
 
+import datetime
+from dateutil import tz
+
 class Reminding(commands.Cog, name = 'reminding'):
     def __init__(self, bot):
         self.bot = bot
@@ -65,14 +68,28 @@ class Reminding(commands.Cog, name = 'reminding'):
         try:
             print('I\'m now awaiting the response')
             reply = await self.bot.wait_for('message', check = proper_reply2, timeout = 30.0)
-            remind_date_time = reply.content
+            remind_date_time = formats.get_date_time_format(reply.content)
         except asyncio.TimeoutError:
             print(f'But he was taking too long though, so I had to ignore him.')
             return await ctx.channel.send(config.MSG_TIMEOUT_ERROR)
         else:
             print(f'It was due on {remind_date_time}')
 
+        # Make sure that the date is in the future
+        now = datetime.datetime.now(tz=tz.tzlocal())
+        if remind_date_time < now:
+            print(f'But it was in the past!')
+            return await ctx.channel.send(config.MSG_INVALID_REMINDER_DATE)
+
         await ctx.channel.send(f'Okay! Will do.')
+        
+        remind_date_time = remind_date_time.replace(second=0, microsecond=0)
+        print(f'I got that he/she wanted to be reminded on {remind_date_time}')
+
+        await ctx.channel.send(f'Will remind you in {reply.content}')
+        
+        # TO-DO: Convert the datetime into (UTC, timezone, offset) format
+        # TO-DO: Store in database
     
 
 def setup(bot):
