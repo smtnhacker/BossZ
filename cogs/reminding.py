@@ -14,6 +14,7 @@ import pprint
 
 import datetime
 from dateutil import tz
+from dateutil.relativedelta import relativedelta
 
 class Reminding(commands.Cog, name = 'reminding'):
     def __init__(self, bot):
@@ -24,6 +25,7 @@ class Reminding(commands.Cog, name = 'reminding'):
     async def on_ready(self):
         self.check_reminding.start()
         self.remind_people.start()
+        self.cleanup.start()
     
     # Checks if there is any reminder at a given moment
     @tasks.loop(seconds=30.0)
@@ -51,6 +53,11 @@ class Reminding(commands.Cog, name = 'reminding'):
                 )
                 await channel.send(f'{reminder["user_id"]}', embed=reminder_embed)
                 database.finished_reminder(uid)
+    
+    @tasks.loop(hours=12.0)
+    async def cleanup(self):
+        print('------- CLEANING DATABASE ----------')
+        database.cleanup(datetime.datetime.now(tz=tz.tzlocal()) - relativedelta(minutes=-30))
 
     @commands.command(aliases = ['r'])
     async def remind(self, ctx):
@@ -128,14 +135,10 @@ class Reminding(commands.Cog, name = 'reminding'):
             'author' : f'{ctx.message.author.name}',
             'user_id' : f'<@!{user.id}>',
             'done' : False,
-            'guild' : ctx.message.guild.id,
             'channel' : ctx.message.channel.id,
         })
         database.insert_reminder(str(remind_date_time), uid)
         print(f'Uploaded reminder uid {uid} successfully!')
-
-        # TO-DO: Fix the reminding system. So far, looks good tho
-    
 
 def setup(bot):
     bot.add_cog(Reminding(bot))
