@@ -8,3 +8,4 @@ _pycache_
 
 # Mocks
 mock_*.py
+mock_*.txt
