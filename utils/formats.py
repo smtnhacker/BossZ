@@ -64,7 +64,7 @@ def get_date_time_format(dt):
         new_date = now + relativedelta(days=-1)
     elif dt.lower() in ['kanina', 'awhile ago']:
         new_date = now + relativedelta(hours=-2)
-    elif dt.lower() in ['mamaya', 'maya', 'laters', 'tsaka na', 'later', 'basta']:
+    elif dt.lower() in ['mamaya', 'maya', 'laters', 'tsaka na', 'later', 'basta', 'soon']:
         new_date = now + relativedelta(hours=2)
     elif dt.lower() in ['bukas', 'tom', 'tomorrow']:
         new_date = now + relativedelta(days=1)

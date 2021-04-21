@@ -5,8 +5,9 @@ This cog aims to provide an interface for the bot to implement
 a type of reminder saving and pinging system.
 """
 
-from discord.ext import commands
-from utils import formats
+import discord
+from discord.ext import commands, tasks
+from utils import formats, database
 import config
 import asyncio
 import pprint
@@ -17,15 +18,48 @@ from dateutil import tz
 class Reminding(commands.Cog, name = 'reminding'):
     def __init__(self, bot):
         self.bot = bot
+        self.remind_list = list()
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.check_reminding.start()
+        self.remind_people.start()
     
+    # Checks if there is any reminder at a given moment
+    @tasks.loop(seconds=30.0)
+    async def check_reminding(self):
+        now = datetime.datetime.now(tz=tz.tzlocal())
+        now = now.replace(second=0, microsecond=0)
+        reminders = database.get_reminders(str(now))
+        self.remind_list += reminders
+    
+    # Pings people when a reminder is due
+    @tasks.loop(seconds=10.0)
+    async def remind_people(self):
+        while self.remind_list:
+            uid = self.remind_list[-1]
+            self.remind_list.pop(-1)
+            if uid == -1:
+                continue
+            reminder = database.get_reminder(uid)
+            if reminder and not reminder['done']:
+                # send message to the server
+                channel = self.bot.get_channel(reminder["channel"])
+                reminder_embed = discord.Embed(
+                    tite=f'Reminder!', 
+                    description=f'{reminder["author"]} wanted to remind you of your agenda "{reminder["label"]}"'
+                )
+                await channel.send(f'{reminder["user_id"]}', embed=reminder_embed)
+                database.finished_reminder(uid)
+
     @commands.command(aliases = ['r'])
     async def remind(self, ctx):
         """Creates a reminder event"""
 
         # Try to obtain who to remind
         try:
-            msg = ctx.message.content.split(maxsplit=1)
-            user = await self.bot.fetch_user(int(msg[1][3:-1]))
+            msg = ctx.message.content.split(maxsplit=2)
+            user = await self.bot.fetch_user(int(msg[2][3:-1]))
         except ValueError as e:
             exception = f"{type(e).__name__}: {e}"
             user = 'me'
@@ -86,10 +120,21 @@ class Reminding(commands.Cog, name = 'reminding'):
         remind_date_time = remind_date_time.replace(second=0, microsecond=0)
         print(f'I got that he/she wanted to be reminded on {remind_date_time}')
 
-        await ctx.channel.send(f'Will remind you in {reply.content}')
-        
-        # TO-DO: Convert the datetime into (UTC, timezone, offset) format
+        await ctx.channel.send(f'Will remind {user.name} {reply.content}')
+
         # TO-DO: Store in database
+        uid = database.insert_unique({
+            'label' : label,
+            'author' : f'{ctx.message.author.name}',
+            'user_id' : f'<@!{user.id}>',
+            'done' : False,
+            'guild' : ctx.message.guild.id,
+            'channel' : ctx.message.channel.id,
+        })
+        database.insert_reminder(str(remind_date_time), uid)
+        print(f'Uploaded reminder uid {uid} successfully!')
+
+        # TO-DO: Fix the reminding system. So far, looks good tho
     
 
 def setup(bot):
