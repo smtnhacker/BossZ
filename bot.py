@@ -19,7 +19,12 @@ except Exception as e:
     print(f'An exception of type {type(e).__name__} has occured: {e}')
 
 load_dotenv()
-TOKEN = os.getenv('TOKEN')
+try:
+  TOKEN = os.getenv('TOKEN')
+  assert TOKEN
+except Exception:
+  import mock_env
+  TOKEN = mock_env.TOKEN
 
 bot = Bot(command_prefix = config.BOT_PREFIX)
 
